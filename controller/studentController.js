@@ -8,6 +8,19 @@ module.exports.enrollStudent = async (req, res) => {
         //converting course id from String to ObjectId
         const cid = new mongoose.Types.ObjectId(req.body.cid);
 
+        //finding the course, with course id
+        const course = await Course.findById({
+            _id: cid
+        });
+
+        //checking whether the course exist or not
+        if (course === null) {
+            return res.status(400).json({
+                message: "Course does not exist",
+                success: false
+            });
+        }
+
         //checking if student is already enrolled in the course
         const courseCheck = await Student.findOne({
             "_id": req.userId,

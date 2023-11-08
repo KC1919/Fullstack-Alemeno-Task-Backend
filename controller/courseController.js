@@ -36,6 +36,26 @@ module.exports.addCourse = async (req, res) => {
     }
 }
 
+module.exports.getCourseList = async (req, res) => {
+    try {
+        const courses = await Course.find({});
+
+        if (courses !== null) {
+            return res.status(200).json(courses)
+        } else {
+            return res.status(400).json({
+                message: "Course not found!",
+                success: false
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({
+            message: "Course not found, internal server error",
+            success: false
+        });
+    }
+}
+
 module.exports.getCourseDetails = async (req, res) => {
     try {
         const cid = req.params.id;
