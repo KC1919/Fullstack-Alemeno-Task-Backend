@@ -7,5 +7,6 @@ router
     .post('/addCourse', courseController.addCourse)
     .get('/api/:id', courseController.getCourseDetails)
     .get('/allCourses', courseController.getCourseList)
+    .get('/search', courseController.searchCourse)
 
 module.exports = router;

@@ -27,18 +27,28 @@ const courseSchema = new mongoose.Schema({
         type: String
     },
     preRequisites: {
-        type: [mongoose.Schema.Types.ObjectId],
+        type: [String],
         default: null
     },
-    syllabus: {
-        type: [String]
-    },
+    syllabus: [{
+        week: String,
+        topic: String,
+        content: String
+    }],
     enrollCount: {
         type: Number,
         default: 0
     }
 }, {
     timestamps: true
+});
+
+courseSchema.index({
+    name: 'text',
+    description: 'text',
+    duration: 'text',
+    instructor: 'text',
+    enrollment: 'text'
 });
 
 const Course = mongoose.model('course', courseSchema);
