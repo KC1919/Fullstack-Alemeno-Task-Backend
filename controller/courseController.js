@@ -1,4 +1,6 @@
 const Course = require('../models/Course');
+const NodeCache = require('node-cache');
+const myCache = new NodeCache();
 
 module.exports.addCourse = async (req, res) => {
     try {
@@ -41,20 +43,37 @@ module.exports.getCourseList = async (req, res) => {
 
         const skipCount = (page - 1 < 0 ? 0 : page - 1) * limit;
 
-        const courses = await Course.find({}).skip(skipCount).limit(2);
+        let courses;
 
-        if (courses !== null) {
-            return res.status(200).json(courses)
+        if (myCache.has(`${skipCount}-${limit}`)) {
+            courses = myCache.get(`${skipCount}-${limit}`);
+            return res.status(200).json({
+                "success": true,
+                "courses": JSON.parse(courses)
+            })
         } else {
-            return res.status(400).json({
-                message: "Course not found!",
-                success: false
-            });
+            courses = await Course.find({}).skip(skipCount).limit(2);
+
+            if (courses !== null) {
+                myCache.set(`${skipCount}-${limit}`, JSON.stringify(courses));
+                return res.status(200).json({
+                    "success": true,
+                    "courses": courses
+                })
+            } else {
+                return res.status(400).json({
+                    message: "Course not found!",
+                    success: false
+                });
+            }
         }
+
+
     } catch (error) {
         return res.status(500).json({
             message: "Course not found, internal server error",
-            success: false
+            success: false,
+            error: error.message
         });
     }
 }
@@ -63,24 +82,38 @@ module.exports.getCourseDetails = async (req, res) => {
     try {
         const cid = req.params.id;
 
-        const course = await Course.findOne({
-            _id: cid
-        }, {
-            _id: 0,
-            "name": 1,
-            "instructor": 1,
-            "enrollment": 1,
-            "duration": 1,
-            "description": 1
-        });
+        let course;
 
-        if (course !== null) {
-            return res.status(200).json(course)
+        if (myCache.has(cid)) {
+            course = myCache.get(cid);
+            return res.status(200).json({
+                "success": true,
+                "course": JSON.parse(course)
+            })
         } else {
-            return res.status(400).json({
-                message: "Course not found!",
-                success: false
+            course = await Course.findOne({
+                _id: cid
+            }, {
+                _id: 0,
+                "name": 1,
+                "instructor": 1,
+                "enrollment": 1,
+                "duration": 1,
+                "description": 1
             });
+
+            if (course !== null) {
+                myCache.set(cid, JSON.stringify(course));
+                return res.status(200).json({
+                    "success": true,
+                    "course": course
+                });
+            } else {
+                return res.status(400).json({
+                    message: "Course not found!",
+                    success: false
+                });
+            }
         }
     } catch (error) {
         return res.status(500).json({
@@ -96,22 +129,35 @@ module.exports.searchCourse = async (req, res) => {
         const filter = req.query.filter;
 
         console.log(searchTerm);
-        const courses = await Course.find({
-            $text: {
-                $search: searchTerm,
-                $search: filter,
-                $diacriticSensitive: true
-            }
-        });
-        // console.log(courses);
 
-        return res.status(200).json({
-            courses: courses,
-            success: true
-        })
+        let courses;
 
+        if (myCache.has(`${searchTerm}-${filter}`)) {
+            courses = myCache.get(`${searchTerm}-${filter}`);
+            return res.status(200).json({
+                courses: JSON.parse(courses),
+                success: true
+            })
+        } else {
+            courses = await Course.find({
+                $text: {
+                    $search: searchTerm,
+                    $search: filter,
+                    $diacriticSensitive: true
+                }
+            });
+            // console.log(courses);
+
+            myCache.set(`${searchTerm}-${filter}`, JSON.stringify(courses));
+
+            return res.status(200).json({
+                courses: courses,
+                success: true
+            })
+
+        }
     } catch (error) {
-        console.log("Failed to search course, internal server error");
+        console.log("Failed to search course, internal server error", error);
         return res.status(500).json({
             message: "Failed to search course, internal server error",
             success: false,

@@ -1,6 +1,8 @@
+const NodeCache = require('node-cache');
 const Course = require('../models/Course');
 const Student = require('../models/Student');
 const mongoose = require('mongoose');
+const myCache = new NodeCache();
 
 module.exports.enrollStudent = async (req, res) => {
     try {
@@ -96,70 +98,81 @@ module.exports.getEnrolledCourses = async (req, res) => {
 
         // console.log(req.userId);
 
-        //fetching the id of all the courses student is enroled in
-        const data = await Student.findById({
-            _id: req.userId
-        }, {
-            "courses": 1,
-            "_id": 0
-        });
-
-        let courses = data.courses;
-
-        if (courses.length > 0) {
-            let cidArr = [];
-            const courseMap = new Map();
-
-            //pushing all the ids in an array
-            courses.forEach(course => {
-                cidArr.push(course.cid);
-                courseMap.set(course.cid.toString(), {
-                    "progress": course.progress,
-                    "dueDate": course.dueDate
-                });
-            })
-
-            // fetching all the courses student is enrolled in,
-            // from course collection using the course id
-            const enrolledCourses = await Course.find({
-                _id: {
-                    $in: cidArr
-                }
-            });
-
-            if (enrolledCourses == null) {
-                return res.status(400).json({
-                    message: "No enrolled courses found!",
-                    success: false
-                })
-            }
-
-            //combining the required details to be sent back to the user
-            enrolledCourses.forEach(course => {
-                let courseDetails = {
-                    ...courseMap.get(course._id.toString()),
-                    "instructor": course.instructor,
-                    "name": course.name
-                }
-                courseMap.set(course._id.toString(), courseDetails);
-            })
-
-            //array to store enrolled course details objects
-            const enrolledCourseDetails = []
-
-            courseMap.forEach((val, key, map) => {
-                enrolledCourseDetails.push(map.get(key));
-            })
-
+        if (myCache.has(req.userId)) {
+            let enrollCourses = myCache.get(req.userId);
             return res.status(200).json({
-                "enrolledCourses": enrolledCourseDetails,
+                "enrolledCourses": JSON.parse(enrollCourses),
                 success: true
             });
         } else {
-            return res.status(400).json({
-                message: "Student not enrolled in any course",
-                enrolledCourses: []
-            })
+
+            //fetching the id of all the courses student is enroled in
+            const data = await Student.findById({
+                _id: req.userId
+            }, {
+                "courses": 1,
+                "_id": 0
+            });
+
+            let courses = data.courses;
+
+            if (courses.length > 0) {
+                let cidArr = [];
+                const courseMap = new Map();
+
+                //pushing all the ids in an array
+                courses.forEach(course => {
+                    cidArr.push(course.cid);
+                    courseMap.set(course.cid.toString(), {
+                        "progress": course.progress,
+                        "dueDate": course.dueDate
+                    });
+                })
+
+                // fetching all the courses student is enrolled in,
+                // from course collection using the course id
+                const enrolledCourses = await Course.find({
+                    _id: {
+                        $in: cidArr
+                    }
+                });
+
+                if (enrolledCourses == null) {
+                    return res.status(400).json({
+                        message: "No enrolled courses found!",
+                        success: false
+                    })
+                }
+
+                //combining the required details to be sent back to the user
+                enrolledCourses.forEach(course => {
+                    let courseDetails = {
+                        ...courseMap.get(course._id.toString()),
+                        "instructor": course.instructor,
+                        "name": course.name
+                    }
+                    courseMap.set(course._id.toString(), courseDetails);
+                })
+
+                //array to store enrolled course details objects
+                const enrolledCourseDetails = []
+
+                courseMap.forEach((val, key, map) => {
+                    enrolledCourseDetails.push(map.get(key));
+                })
+
+                myCache.set(req.userId, JSON.stringify(enrolledCourseDetails));
+
+                return res.status(200).json({
+                    "enrolledCourses": enrolledCourseDetails,
+                    success: true
+                });
+            } else {
+                return res.status(400).json({
+                    message: "Student not enrolled in any course",
+                    enrolledCourses: []
+                })
+            }
         }
     } catch (error) {
         console.log("Failed to fetch enrolled courses, server error");
@@ -215,17 +228,31 @@ module.exports.getFullCourseDetails = async (req, res) => {
     try {
         const cid = req.body.cid;
 
-        const course = await Course.findOne({
-            _id: cid
-        });
+        let course;
 
-        if (course !== null) {
-            return res.status(200).json(course)
-        } else {
-            return res.status(400).json({
-                message: "Course not found!",
-                success: false
+        if (myCache.has(cid)) {
+            course = myCache.get(cid);
+            return res.status(200).json({
+                success: true,
+                "course": JSON.parse(course)
             });
+        } else {
+            course = await Course.findOne({
+                _id: cid
+            });
+
+            if (course !== null) {
+                myCache.set(cid, JSON.stringify(course));
+                return res.status(200).json({
+                    success: true,
+                    "course": course
+                });
+            } else {
+                return res.status(400).json({
+                    message: "Course not found!",
+                    success: false
+                });
+            }
         }
     } catch (error) {
         return res.status(500).json({

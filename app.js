@@ -20,7 +20,6 @@ app.use(express.urlencoded({
     extended: true
 }));
 
-
 app.use('/auth', authRouter);
 app.use('/course', courseRouter)
 app.use('/student', studentRouter)
