@@ -1,6 +1,4 @@
 const Course = require('../models/Course');
-const mongoose = require('mongoose');
-const errorHandler = require('../utils/errorFunction');
 
 module.exports.addCourse = async (req, res) => {
     try {
