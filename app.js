@@ -7,6 +7,7 @@ const courseRouter = require('./routes/course');
 const studentRouter = require('./routes/student');
 const errorHandler = require('./utils/errorFunction.js');
 const PORT = 8000;
+const cors=require('cors');
 
 
 require('dotenv').config({
@@ -14,7 +15,7 @@ require('dotenv').config({
 });
 
 app.use(cookieParser());
-
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({
     extended: true
