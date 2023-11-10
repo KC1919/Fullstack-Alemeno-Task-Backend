@@ -52,7 +52,7 @@ module.exports.getCourseList = async (req, res) => {
                 "courses": JSON.parse(courses)
             })
         } else {
-            courses = await Course.find({}).skip(skipCount).limit(2);
+            courses = await Course.find({}).skip(skipCount).limit(limit);
 
             if (courses !== null) {
                 myCache.set(`${skipCount}-${limit}`, JSON.stringify(courses));

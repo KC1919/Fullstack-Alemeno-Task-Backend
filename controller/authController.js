@@ -29,7 +29,10 @@ module.exports.login = async (req, res) => {
             }, process.env.SECRET_KEY);
 
             res.cookie('secret', token, {
-                maxAge: 86400000
+                maxAge: 86400000,
+                httpOnly: true,
+                secure: true,
+                sameSite: None
             });
 
             return res.status(200).json({
@@ -91,6 +94,26 @@ module.exports.register = async (req, res) => {
         console.log("Failed to register student, internal server error", error);
         return res.status(500).json({
             message: "Failed to register student, internal server error",
+            success: false,
+            error: error.message
+        });
+    }
+}
+
+module.exports.logout = (req, res) => {
+    try {
+        res.cookie('secret', {
+            maxAge: Date.now()
+        });
+
+        return res.status(200).json({
+            message: "Logged out successfully!",
+            success: true
+        });
+    } catch (error) {
+        console.log("Failed to logout, server error", error);
+        return res.status(500).json({
+            message: "Failed to logout, server error",
             success: false,
             error: error.message
         });

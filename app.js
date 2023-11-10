@@ -28,8 +28,6 @@ app.use('/student', studentRouter)
 app.use(errorHandler);
 
 
-
-
 app.listen(PORT, (err) => {
     connectDb();
     console.log("Server listening on port", PORT);
