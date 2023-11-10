@@ -76,20 +76,22 @@ module.exports.enrollStudent = async (req, res) => {
                     })
                 }
             }).catch(err => {
-                return res.status(500).json({
+                res.status(500).json({
                     message: "Failed to enroll, db error",
                     success: false,
                     error: err.message
-                })
+                });
+                process.exit(0);
             });
         }
 
     } catch (error) {
-        return res.status(500).json({
+        res.status(500).json({
             message: "Failed to enroll, internal server error",
             success: false,
             error: error.message
-        })
+        });
+        process.exit(0);
     }
 }
 
@@ -175,12 +177,13 @@ module.exports.getEnrolledCourses = async (req, res) => {
             }
         }
     } catch (error) {
-        console.log("Failed to fetch enrolled courses, server error");
-        return res.status(500).json({
+        console.log("Failed to fetch enrolled courses, server error", error);
+        res.status(500).json({
             message: "Failed to fetch enrolled courses, internal server error",
             success: false,
             error: error.message
         });
+        process.exit(0);
     }
 }
 
@@ -216,11 +219,13 @@ module.exports.markCourseCompleted = async (req, res) => {
             }
         })
     } catch (error) {
-        return res.status(400).json({
+        console.log("Failed to mark course completed, server error", error);
+        res.status(400).json({
             message: "Failed to mark course as completed, internal server error",
             success: false,
             error: error.message
         })
+        process.exit(0);
     }
 }
 
@@ -255,9 +260,11 @@ module.exports.getFullCourseDetails = async (req, res) => {
             }
         }
     } catch (error) {
-        return res.status(500).json({
+        console.log("failed to get full course details, server error", error);
+        res.status(500).json({
             message: "Course not found, internal server error",
             success: false
         });
+        process.exit(0);
     }
 }

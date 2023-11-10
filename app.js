@@ -5,7 +5,6 @@ const connectDb = require('./config/db.js');
 const authRouter = require('./routes/auth');
 const courseRouter = require('./routes/course');
 const studentRouter = require('./routes/student');
-const errorHandler = require('./utils/errorFunction.js');
 const PORT = 8000;
 const cors=require('cors');
 

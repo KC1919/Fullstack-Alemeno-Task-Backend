@@ -9,14 +9,14 @@ module.exports.addCourse = async (req, res) => {
             ordered: false
         }).then(result => {
             if (result != null) {
-                res.status(200).json({
+                return res.status(200).json({
                     message: "Course added successfully",
                     success: true
                 });
             }
         }).catch(err => {
             console.log("Failed to add course, db error");
-            res.status(500).json({
+            return res.status(500).json({
                 message: "Failed to add course, db error",
                 success: false,
                 error: err.message
@@ -24,7 +24,7 @@ module.exports.addCourse = async (req, res) => {
         });
     } catch (error) {
         console.log("Failed to add course, internal server error", error);
-        res.status(500).json({
+        return res.status(500).json({
             message: "Failed to add course",
             success: false
         });
@@ -70,11 +70,12 @@ module.exports.getCourseList = async (req, res) => {
 
 
     } catch (error) {
-        return res.status(500).json({
+        res.status(500).json({
             message: "Course not found, internal server error",
             success: false,
             error: error.message
         });
+        process.exit(0);
     }
 }
 
@@ -116,10 +117,11 @@ module.exports.getCourseDetails = async (req, res) => {
             }
         }
     } catch (error) {
-        return res.status(500).json({
+        res.status(500).json({
             message: "Course not found, internal server error",
             success: false
         });
+        process.exit(0);
     }
 }
 
@@ -158,10 +160,11 @@ module.exports.searchCourse = async (req, res) => {
         }
     } catch (error) {
         console.log("Failed to search course, internal server error", error);
-        return res.status(500).json({
+        res.status(500).json({
             message: "Failed to search course, internal server error",
             success: false,
             error: error.message
-        })
+        });
+        process.exit(0);
     }
 }
