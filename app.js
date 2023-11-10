@@ -14,7 +14,11 @@ require('dotenv').config({
 });
 
 app.use(cookieParser());
-app.use(cors());
+app.use(cors({
+    origin:["https://fullstack-alemeno-frontend.vercel.app"],
+    credentials:true
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({
     extended: true
@@ -23,9 +27,6 @@ app.use(express.urlencoded({
 app.use('/auth', authRouter);
 app.use('/course', courseRouter)
 app.use('/student', studentRouter)
-
-app.use(errorHandler);
-
 
 app.listen(PORT, (err) => {
     connectDb();

@@ -7,6 +7,10 @@ const myCache = new NodeCache();
 module.exports.enrollStudent = async (req, res) => {
     try {
 
+        console.log(req.body.cid);
+
+        console.log(req.userId);
+
         //converting course id from String to ObjectId
         const cid = new mongoose.Types.ObjectId(req.body.cid);
 
@@ -81,7 +85,6 @@ module.exports.enrollStudent = async (req, res) => {
                     success: false,
                     error: err.message
                 });
-                process.exit(0);
             });
         }
 
@@ -91,7 +94,6 @@ module.exports.enrollStudent = async (req, res) => {
             success: false,
             error: error.message
         });
-        process.exit(0);
     }
 }
 
@@ -183,7 +185,6 @@ module.exports.getEnrolledCourses = async (req, res) => {
             success: false,
             error: error.message
         });
-        process.exit(0);
     }
 }
 
@@ -225,7 +226,6 @@ module.exports.markCourseCompleted = async (req, res) => {
             success: false,
             error: error.message
         })
-        process.exit(0);
     }
 }
 
@@ -265,6 +265,6 @@ module.exports.getFullCourseDetails = async (req, res) => {
             message: "Course not found, internal server error",
             success: false
         });
-        process.exit(0);
+        // process.exit(0);
     }
 }
