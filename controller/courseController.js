@@ -133,8 +133,8 @@ module.exports.searchCourse = async (req, res) => {
 
         let courses;
 
-        if (myCache.has(`${searchTerm}`)) {
-            courses = myCache.get(`${searchTerm}`);
+        if (myCache.has(searchTerm)) {
+            courses = myCache.get(searchTerm);
             return res.status(200).json({
                 courses: JSON.parse(courses),
                 success: true
@@ -148,7 +148,7 @@ module.exports.searchCourse = async (req, res) => {
             });
             // console.log(courses);
 
-            myCache.set(`${searchTerm}`, JSON.stringify(courses));
+            myCache.set(searchTerm, JSON.stringify(courses));
 
             return res.status(200).json({
                 courses: courses,
@@ -163,6 +163,5 @@ module.exports.searchCourse = async (req, res) => {
             success: false,
             error: error.message
         });
-        process.exit(0);
     }
 }
