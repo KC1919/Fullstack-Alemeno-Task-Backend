@@ -128,14 +128,13 @@ module.exports.getCourseDetails = async (req, res) => {
 module.exports.searchCourse = async (req, res) => {
     try {
         const searchTerm = req.query.search;
-        const filter = req.query.filter;
 
         console.log(searchTerm);
 
         let courses;
 
-        if (myCache.has(`${searchTerm}-${filter}`)) {
-            courses = myCache.get(`${searchTerm}-${filter}`);
+        if (myCache.has(`${searchTerm}`)) {
+            courses = myCache.get(`${searchTerm}`);
             return res.status(200).json({
                 courses: JSON.parse(courses),
                 success: true
@@ -144,13 +143,12 @@ module.exports.searchCourse = async (req, res) => {
             courses = await Course.find({
                 $text: {
                     $search: searchTerm,
-                    $search: filter,
                     $diacriticSensitive: true
                 }
             });
             // console.log(courses);
 
-            myCache.set(`${searchTerm}-${filter}`, JSON.stringify(courses));
+            myCache.set(`${searchTerm}`, JSON.stringify(courses));
 
             return res.status(200).json({
                 courses: courses,

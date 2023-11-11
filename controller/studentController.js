@@ -65,6 +65,8 @@ module.exports.enrollStudent = async (req, res) => {
                         }
                     });
 
+                    myCache.del(req.userId);
+
                     return res.status(200).json({
                         message: "Enrolled Successfully",
                         success: true
@@ -127,7 +129,8 @@ module.exports.getEnrolledCourses = async (req, res) => {
                     cidArr.push(course.cid);
                     courseMap.set(course.cid.toString(), {
                         "progress": course.progress,
-                        "dueDate": course.dueDate
+                        "dueDate": course.dueDate,
+                        "completionStatus": course.completionStatus
                     });
                 })
 
@@ -151,7 +154,8 @@ module.exports.getEnrolledCourses = async (req, res) => {
                     let courseDetails = {
                         ...courseMap.get(course._id.toString()),
                         "instructor": course.instructor,
-                        "name": course.name
+                        "name": course.name,
+                        "_id": course._id
                     }
                     courseMap.set(course._id.toString(), courseDetails);
                 })
@@ -191,6 +195,8 @@ module.exports.markCourseCompleted = async (req, res) => {
     try {
         const cid = req.body.cid;
 
+        // console.log(cid);
+
         //finding course by id in enrolled courses and updating its status to completed
         //and updating the progress to 100
         await Student.updateOne({
@@ -207,6 +213,7 @@ module.exports.markCourseCompleted = async (req, res) => {
             }
         }).then(result => {
             if (result.modifiedCount > 0) {
+                myCache.del(req.userId);
                 return res.status(200).json({
                     message: "Course marked as completed",
                     success: true
@@ -225,7 +232,6 @@ module.exports.markCourseCompleted = async (req, res) => {
             success: false,
             error: error.message
         })
-        process.exit(0);
     }
 }
 

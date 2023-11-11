@@ -4,9 +4,9 @@ const studentController = require('../controller/studentController');
 const verify = require('../middlewares/verify');
 
 router
-    .post('/enroll', studentController.enrollStudent)
-    .get('/enrolledCourses', studentController.getEnrolledCourses)
-    .put('/updateStatus', studentController.markCourseCompleted)
-    .post('/courseDetails', studentController.getFullCourseDetails)
+    .post('/enroll', verify, studentController.enrollStudent)
+    .get('/enrolledCourses', verify, studentController.getEnrolledCourses)
+    .post('/updateStatus', verify, studentController.markCourseCompleted)
+    .post('/courseDetails', verify, studentController.getFullCourseDetails)
 
 module.exports = router;
